@@ -1,0 +1,10 @@
+def fib n:
+    test n:
+        0:
+        1:
+            1
+        _:
+            fib (n-1) + fib (n-2)
+
+def main:
+    print (fib 10), EOL

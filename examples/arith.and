@@ -1,0 +1,23 @@
+from Sys use exit
+
+def usage:
+    print "usage: arith m n", EOL
+    print " "*4, "where m & n are both integers"
+
+def main argc, argv:
+    print "There are ", argc, " program arguments", EOL
+    
+    if argc > 3:
+        try:
+            a = int argv[2]
+            b = int argv[3]
+
+            c = a + b
+            print c
+            exit 0
+        except:
+            print usage
+            exit 1
+    else:
+        print usage
+        exit 1
