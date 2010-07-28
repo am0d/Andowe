@@ -1,0 +1,11 @@
+*.cmi
+*.cmo
+*.cmx
+*.cma
+*.omc
+*.opt
+*.o
+*.obj
+.*
+!.gitignore
+*~

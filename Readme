@@ -1,0 +1,11 @@
+Andowe is a small language that I am implementing.
+It is implemented in OCaml, using an LLVM backend for compilation and
+JIT interpretation.
+
+Some of the features of the language are:
+    - Support for object-oriented programming
+    - Support for functional programming
+    - Static duck-typing with type inference
+    - Garbage collection
+    - Pattern matching
+    - Separate module compilation
