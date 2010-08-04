@@ -188,7 +188,7 @@ $(EXEC).opt: $(OPTOBJS)
 	$(CAMLYACC) $<
 
 clean::
-	cd src; rm -f *.cm[iox] *.o *~ .*~; rm -f lexer.ml parser.ml
+	cd src; rm -f *.cm[iox] *.o *~ .*~
 	rm -f *.cm[iox] *.o *~ .*~ #*#
 	rm -f $(EXEC)
 	rm -f $(EXEC).opt
