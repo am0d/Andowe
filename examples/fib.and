@@ -1,6 +1,7 @@
 def fib n:
     test n:
         0:
+            raise Invalid_Argument
         1:
             1
         _:
