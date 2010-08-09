@@ -6,6 +6,24 @@
         Lexing.pos_lnum = pos.Lexing.pos_lnum + 1;
         Lexing.pos_bol = pos.Lexing.pos_cnum;
         }
+
+    let s = (Stack.create():int Stack.t)
+    let rec check x =
+        (
+            if Stack.is_empty s then
+                Stack.push x s
+            else if Stack.top s < x then
+                (
+                    Stack.push x s;
+                    print_endline "INDENT"
+                )
+            else if Stack.top s > x then
+                (
+                    print_endline "DEDENT";
+                    ignore (Stack.pop s);
+                    check x
+                )
+        )
 }
 
 let digit = ['0'-'9']
@@ -58,3 +76,9 @@ rule lex = parse
     lex lexbuf
 }
 | eof { raise End_of_file }
+
+and newline = parse
+| [' ']* as spaces {
+    check (String.length spaces);
+    lex lexbuf
+}
