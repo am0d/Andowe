@@ -10,6 +10,7 @@
 %token PLUS MINUS TIMES DIVIDE
 %token EQUALS LTHAN GTHAN LEQUAL GEQUAL NEQUAL
 %token COMMA COLON
+%token BEGIN END
 %token DEF FUN RET
 %token IF ELIF ELSE
 %token EOF
@@ -22,23 +23,32 @@
 %type <unit> parse
 
 %%
-parse: {}
-    | expression {}
+parse:
+    | expr {}
     | defn COLON block {}
 
-expression: {}
+expr: {}
     | INT {}
-    | expression PLUS expression {}
+    | expr PLUS expr {}
+    | expr MINUS expr {}
+    | expr TIMES expr {}
+    | expr DIVIDE expr {}
+
+expressions:
+    | expr {}
 
 defn: {}
-    | DEF IDENT parameters {}
+    | DEF IDENT paramlist {}
 
-block: {}
+block: 
+    | BEGIN expressions END{}
 
-parameters: {}
-    | IDENT {}
-    | IDENT EQUALS value {}
-    | parameters COMMA parameters {}
+paramlist: {}
+    | IDENT defaultvalue {}
+    | IDENT defaultvalue COMMA paramlist {}
+
+defaultvalue: {}
+    | EQUALS value {}
 
 value: INT {}
     | FLOAT {}

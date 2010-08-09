@@ -38,8 +38,10 @@ rule lex = parse
 | ':' { COLON }
 (* Keywords *)
 | "def" { DEF }
-| "if"
-| "else"
+| "begin" { BEGIN }
+| "end" { END }
+| "if" { IF }
+| "else" { ELSE }
 (* Identifiers *)
 | ident as text {
     IDENT text

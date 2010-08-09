@@ -10,9 +10,11 @@ let main () =
     try
         Parser.parse Lexer.lex lexbuf;
         print_endline "Program is syntactically correct"
-    with Message.Error s->
+    with Message.Error s ->
         parse_error s lexbuf
+        | Parser.Error ->
+            parse_error "Syntax error" lexbuf
         | End_of_file ->
-        print_endline ""
+                print_endline ""
 
 let _ = Printexc.print main ()
