@@ -1,1 +1,1 @@
-SOURCES += src/token.ml src/lexer.ml src/main.ml
+SOURCES += src/lexer.mll src/main.ml

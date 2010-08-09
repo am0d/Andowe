@@ -4,7 +4,7 @@ EXEC = bin/andowe
 
 include Makefile.ocaml
 
-CAMLFLAGS = -pp camlp4o
+CAMLFLAGS = 
 
 CAMLC = ocamlc -I src $(CAMLFLAGS)
 CAMLOPT = ocamlopt -I src $(CAMLFLAGS)
