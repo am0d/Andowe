@@ -1,6 +1,11 @@
 {
-    let string_of_char c =
-        String.make 1 c
+    open Parser
+    let incr_linenum lexbuf = 
+        let pos = lexbuf.Lexing.lex_curr_p in
+        lexbuf.Lexing.lex_curr_p <- { pos with
+        Lexing.pos_lnum = pos.Lexing.pos_lnum + 1;
+        Lexing.pos_bol = pos.Lexing.pos_cnum;
+        }
 }
 
 let digit = ['0'-'9']
@@ -10,38 +15,44 @@ rule lex = parse
 (* Numbers *)
 | digit+ as itext {
     let inum = int_of_string itext in
-    print_endline ("Int: " ^ (string_of_int inum));
-    lex lexbuf
+    INT inum
 }
 | digit* '.' digit+ as ftext {
     let fnum = float_of_string ftext in
-    print_endline ("Float: " ^ (string_of_float fnum));
-    lex lexbuf
+    FLOAT fnum
 }
 (* Strings *)
 | '\"' [^ '\"']* '\"' as stext {
-    print_endline ("String: " ^ stext);
-    lex lexbuf
+    STRING stext
 }
 (* Operators *)
-| '+' {print_endline "+"; lex lexbuf}
-| '-' {print_endline "-"; lex lexbuf}
-| '*' {print_endline "*"; lex lexbuf}
-| '/' {print_endline "/"; lex lexbuf}
+| '+' { PLUS }
+| '-' { MINUS }
+| '*' { TIMES }
+| '/' { DIVIDE }
+| "<>" { NEQUAL }
+| '<' { LTHAN }
+| '>' { GTHAN }
+| '=' { EQUALS }
+| ',' { COMMA }
+| ':' { COLON }
 (* Keywords *)
-| "def" {print_endline "Def"; lex lexbuf}
+| "def" { DEF }
+| "if"
+| "else"
 (* Identifiers *)
 | ident as text {
-    print_endline ("Ident: " ^ text);
-    lex lexbuf
+    IDENT text
 }
 (* Whitespace *)
-| [' ' '\t' '\n'] {
+| [' ' '\t'] {
     lex lexbuf
 }
-| _ as c {
-    print_endline ("Char: " ^ (string_of_char c));
+| '\n' {
+    incr_linenum lexbuf;
     lex lexbuf
 }
-| eof {
+| _ {
+    lex lexbuf
 }
+| eof { raise End_of_file }

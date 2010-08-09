@@ -12,3 +12,4 @@
 bin/
 src/lexer.ml
 src/parser.ml
+*.mli
