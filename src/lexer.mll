@@ -96,7 +96,7 @@ and newline = parse
 | [' ']* as spaces {
     match check (String.length spaces) with
     | Some t -> t
-    | None -> lex lexbuf
+    | None -> NEWLINE
 }
 
 {

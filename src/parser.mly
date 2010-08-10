@@ -10,7 +10,7 @@
 %token PLUS MINUS TIMES DIVIDE
 %token EQUALS LTHAN GTHAN LEQUAL GEQUAL NEQUAL
 %token COMMA COLON
-%token BEGIN
+%token NEWLINE BEGIN
 %token <int> END
 %token DEF FUN RET
 %token IF ELIF ELSE
@@ -37,6 +37,8 @@ expr: {}
 
 expressions:
     | expr {}
+    | block {}
+    | expr NEWLINE expressions {}
 
 defn: {}
     | DEF IDENT paramlist {}
