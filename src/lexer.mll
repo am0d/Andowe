@@ -1,6 +1,8 @@
 {
     open Parser
     exception Lexing_error of string;;
+
+    (* Set the line number correctly *)
     let incr_linenum lexbuf = 
         let pos = lexbuf.Lexing.lex_curr_p in
         lexbuf.Lexing.lex_curr_p <- { pos with
@@ -8,8 +10,10 @@
         Lexing.pos_bol = pos.Lexing.pos_cnum;
         }
 
+    (* Indentation stack *)
     let s = (Stack.create():int Stack.t);;
     ignore(Stack.push 0 s);;
+    (* Indentation level checker *)
     let rec check x =
         (
             if Stack.is_empty s then
@@ -31,10 +35,13 @@
                     match check x with
                     | Some (END i) -> Some (END (i+1))
                     | None -> Some (END 1)
+                    (* This will only happen if the dedent doesn't match a
+                     * previous block *)
                     | _ -> raise (Lexing_error "Indentation failure")
                 )
             else 
                 (
+                    (* Indentation level matches the top of the stack *)
                     print_endline "NONE";
                     None
                 )
@@ -71,6 +78,8 @@ rule lex = parse
 | ':' { COLON }
 (* Keywords *)
 | "def" { DEF }
+| "fun" { FUN }
+| "return" { RETURN }
 | "begin" { BEGIN }
 | "end" { END (1) }
 | "if" { IF }
@@ -83,15 +92,18 @@ rule lex = parse
 | [' ' '\t'] {
     lex lexbuf
 }
+(* Newlines - increment the line number and check the indent *)
 | '\n' {
     incr_linenum lexbuf;
     newline lexbuf
 }
+(* Anything else *)
 | _ {
     lex lexbuf
 }
 | eof { raise End_of_file }
 
+(* Check the indent at the start of a new line *)
 and newline = parse
 | [' ']* as spaces {
     match check (String.length spaces) with
