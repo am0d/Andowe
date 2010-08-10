@@ -39,6 +39,7 @@ expressions:
     | expr {}
     | block {}
     | expr NEWLINE expressions {}
+    | expr block {}
 
 defn: {}
     | DEF IDENT paramlist {}
