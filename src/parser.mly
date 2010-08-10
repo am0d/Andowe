@@ -10,7 +10,8 @@
 %token PLUS MINUS TIMES DIVIDE
 %token EQUALS LTHAN GTHAN LEQUAL GEQUAL NEQUAL
 %token COMMA COLON
-%token BEGIN END
+%token BEGIN
+%token <int> END
 %token DEF FUN RET
 %token IF ELIF ELSE
 %token EOF

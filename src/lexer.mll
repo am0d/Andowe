@@ -1,5 +1,6 @@
 {
     open Parser
+    exception Lexing_error of string;;
     let incr_linenum lexbuf = 
         let pos = lexbuf.Lexing.lex_curr_p in
         lexbuf.Lexing.lex_curr_p <- { pos with
@@ -7,21 +8,35 @@
         Lexing.pos_bol = pos.Lexing.pos_cnum;
         }
 
-    let s = (Stack.create():int Stack.t)
+    let s = (Stack.create():int Stack.t);;
+    ignore(Stack.push 0 s);;
     let rec check x =
         (
             if Stack.is_empty s then
-                Stack.push x s
+                (
+                    print_endline "Empty"; flush stdout;
+                    Stack.push x s;
+                    Some (BEGIN)
+                )
             else if Stack.top s < x then
                 (
+                    print_endline "BEGIN";
                     Stack.push x s;
-                    print_endline "INDENT"
+                    Some (BEGIN)
                 )
             else if Stack.top s > x then
                 (
-                    print_endline "DEDENT";
+                    print_endline "END";
                     ignore (Stack.pop s);
-                    check x
+                    match check x with
+                    | Some (END i) -> Some (END (i+1))
+                    | None -> Some (END 1)
+                    | _ -> raise (Lexing_error "Indentation failure")
+                )
+            else 
+                (
+                    print_endline "NONE";
+                    None
                 )
         )
 }
@@ -57,7 +72,7 @@ rule lex = parse
 (* Keywords *)
 | "def" { DEF }
 | "begin" { BEGIN }
-| "end" { END }
+| "end" { END (1) }
 | "if" { IF }
 | "else" { ELSE }
 (* Identifiers *)
@@ -70,7 +85,7 @@ rule lex = parse
 }
 | '\n' {
     incr_linenum lexbuf;
-    lex lexbuf
+    newline lexbuf
 }
 | _ {
     lex lexbuf
@@ -79,6 +94,33 @@ rule lex = parse
 
 and newline = parse
 | [' ']* as spaces {
-    check (String.length spaces);
-    lex lexbuf
+    match check (String.length spaces) with
+    | Some t -> t
+    | None -> lex lexbuf
+}
+
+{
+(* Implement the cache so that we can return multiple END tokens *)
+let cached_tokens = ref None;;
+let lex_cache lexbuf =
+    match !cached_tokens with
+    | Some (END i) when i > 1 -> (
+        cached_tokens := Some (END (i-1));
+        END (1)
+    )
+    | Some (END 1) -> (
+        cached_tokens := None;
+        END (1)
+    )
+    | Some token -> (
+        token
+    )
+    | None -> (
+        match lex lexbuf with
+        | END i when i > 1 -> (
+            cached_tokens := Some (END (i - 1));
+            END (1)
+        )
+        | token -> token
+    )
 }
