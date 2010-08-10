@@ -30,6 +30,7 @@ parse:
 
 expr: {}
     | INT {}
+    | IDENT {}
     | expr PLUS expr {}
     | expr MINUS expr {}
     | expr TIMES expr {}
