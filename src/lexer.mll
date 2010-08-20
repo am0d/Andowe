@@ -95,13 +95,14 @@ rule lex = parse
 (* Newlines - increment the line number and check the indent *)
 | '\n' {
     incr_linenum lexbuf;
-    newline lexbuf
+    (*newline lexbuf*)
+    NEWLINE
 }
 (* Anything else *)
 | _ {
     lex lexbuf
 }
-| eof { raise End_of_file }
+| eof { EOF }
 
 (* Check the indent at the start of a new line *)
 and newline = parse
@@ -117,6 +118,7 @@ let cached_tokens = ref None;;
 let lex_cache lexbuf =
     match !cached_tokens with
     | Some (END i) when i > 1 -> (
+        (* handle multiple de-dents *)
         cached_tokens := Some (END (i-1));
         END (1)
     )

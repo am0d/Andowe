@@ -8,7 +8,7 @@ let main () =
     print_endline "Andowe 0.0.0";
     let lexbuf = Lexing.from_channel stdin in
     try
-        Parser.parse Lexer.lex_cache lexbuf;
+        Parser.toplevel Lexer.lex_cache lexbuf;
         print_endline "Program is syntactically correct"
     with Message.Error s ->
         parse_error s lexbuf

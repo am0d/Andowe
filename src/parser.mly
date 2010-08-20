@@ -1,5 +1,5 @@
 %{
-    let parse_error s = 
+    let toplevel_error s = 
         raise (Message.Error s)
 %}
 
@@ -12,7 +12,7 @@
 %token COMMA COLON
 %token NEWLINE BEGIN
 %token <int> END
-%token DEF FUN RET
+%token DEF FUN RETURN
 %token IF ELIF ELSE
 %token EOF
 
@@ -20,42 +20,51 @@
 %left PLUS MINUS
 %left TIMES DIVIDE
 
-%start parse
-%type <unit> parse
+%start toplevel
+%type <unit> toplevel
 
 %%
-parse:
-    | expr {}
-    | defn COLON block {}
+toplevel:
+    | EOF {}
+    | exprtop {}
+    | deftop {}
 
-expr: {}
-    | INT {}
-    | IDENT {}
+exprtop: 
+    | expr EOF {}
+    | expr NEWLINE {}
+    | expr NEWLINE toplevel {}
+
+deftop:
+    | def NEWLINE toplevel {}
+
+def: 
+    | DEF IDENT paramlist COLON NEWLINE block {}
+
+block: 
+    | END toplevel {}
+    | exprtop END toplevel {}
+
+expr:
+    | arith {}
+    | value {}
+
+arith:
     | expr PLUS expr {}
     | expr MINUS expr {}
     | expr TIMES expr {}
     | expr DIVIDE expr {}
 
-expressions:
-    | expr {}
-    | block {}
-    | expr NEWLINE expressions {}
-    | expr block {}
-
-defn: {}
-    | DEF IDENT paramlist {}
-
-block: 
-    | BEGIN expressions END{}
-
-paramlist: {}
+paramlist:
+    | {}
     | IDENT defaultvalue {}
     | IDENT defaultvalue COMMA paramlist {}
 
-defaultvalue: {}
+defaultvalue:
+    | {}
     | EQUALS value {}
 
-value: INT {}
+value: 
+    | INT {}
     | FLOAT {}
     | IDENT {}
     | STRING {}
