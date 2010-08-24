@@ -10,42 +10,6 @@
         Lexing.pos_bol = pos.Lexing.pos_cnum;
         }
 
-    (* Indentation stack *)
-    let s = (Stack.create():int Stack.t);;
-    ignore(Stack.push 0 s);;
-    (* Indentation level checker *)
-    let rec check x =
-        (
-            if Stack.is_empty s then
-                (
-                    print_endline "Empty"; flush stdout;
-                    Stack.push x s;
-                    Some (BEGIN)
-                )
-            else if Stack.top s < x then
-                (
-                    print_endline "BEGIN";
-                    Stack.push x s;
-                    Some (BEGIN)
-                )
-            else if Stack.top s > x then
-                (
-                    print_endline "END";
-                    ignore (Stack.pop s);
-                    match check x with
-                    | Some (END i) -> Some (END (i+1))
-                    | None -> Some (END 1)
-                    (* This will only happen if the dedent doesn't match a
-                     * previous block *)
-                    | _ -> raise (Lexing_error "Indentation failure")
-                )
-            else 
-                (
-                    (* Indentation level matches the top of the stack *)
-                    print_endline "NONE";
-                    None
-                )
-        )
 }
 
 let digit = ['0'-'9']
@@ -80,8 +44,8 @@ rule lex = parse
 | "def" { DEF }
 | "fun" { FUN }
 | "return" { RETURN }
-| "begin" { BEGIN }
-| "end" { END (1) }
+| "\nbegin\n" { BEGIN }
+| "\nend\n" { END (1) }
 | "if" { IF }
 | "else" { ELSE }
 (* Identifiers *)
@@ -89,11 +53,16 @@ rule lex = parse
     IDENT text
 }
 (* Whitespace *)
+| [' ' '\t']+ '\n' {
+    (* Ignore blank lines *)
+    incr_linenum lexbuf;
+    lex lexbuf
+}
 | [' ' '\t'] {
     lex lexbuf
 }
 (* Newlines - increment the line number and check the indent *)
-| '\n' {
+| ['\n']+ {
     incr_linenum lexbuf;
     (*newline lexbuf*)
     NEWLINE
@@ -106,10 +75,8 @@ rule lex = parse
 
 (* Check the indent at the start of a new line *)
 and newline = parse
-| [' ']* as spaces {
-    match check (String.length spaces) with
-    | Some t -> t
-    | None -> NEWLINE
+| [' ']* {
+    NEWLINE
 }
 
 {

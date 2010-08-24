@@ -26,23 +26,23 @@
 %%
 toplevel:
     | EOF {}
+    | NEWLINE {}
     | exprtop {}
     | deftop {}
 
 exprtop: 
     | expr EOF {}
-    | expr NEWLINE {}
     | expr NEWLINE toplevel {}
 
 deftop:
     | def NEWLINE toplevel {}
 
 def: 
-    | DEF IDENT paramlist COLON NEWLINE block {}
+    | DEF IDENT paramlist COLON block {}
 
 block: 
-    | END toplevel {}
-    | exprtop END toplevel {}
+    | BEGIN END toplevel {}
+    | BEGIN exprtop END toplevel {}
 
 expr:
     | arith {}
