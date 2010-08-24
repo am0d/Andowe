@@ -1,6 +1,1 @@
-def test:
-begin
-    1+2
-end
-
 3 + 4
