@@ -6,6 +6,7 @@ let main () =
     print_endline "Andowe 0.0.0";
     let lexstream = Stream.of_channel stdin in
     try
+        (*Lexer.debug (Lexer.lex lexstream);*)
         ignore(Parser.toplevel (Lexer.lex lexstream));
         print_endline "Program is syntactically correct"
     with Message.Error s ->

@@ -5,3 +5,4 @@ type token =
     | IDENT of string
     | PLUS
     | MINUS
+    | NEWLINE
