@@ -9,5 +9,4 @@ Some of the features of the language are:
     - Garbage collection
     - Pattern matching
     - Separate module compilation
-    - Significant whitespace (blocks are defined by indentation)
     - Polymorphic functions
