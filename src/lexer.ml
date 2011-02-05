@@ -2,13 +2,9 @@ open Printf
 open Token
 
 let rec lex = parser
-    | [< ' (' '|'\t'); stream >] -> (
+    | [< ' (' '|'\t'|'\n'); stream >] -> (
         (* Ignore whitespace in the middle of the line *)
         lex stream
-    )
-    | [< ' ('\n'); stream=lex >] -> (
-        (* Newlines are a special token *)
-        [< 'NEWLINE; stream >]
     )
     | [< ' ('0'..'9') as c; stream >] -> (
         (* Recognise numbers - both integer and float *)
@@ -16,11 +12,15 @@ let rec lex = parser
         Buffer.add_char buf c;
         lex_int buf stream
     )
-    | [< ' ('+' | '-' | '*' | '/') as c; stream=lex >] -> (
+    | [< 'c; stream=lex >] -> (
         (* Recognise standard operators *)
         match c with
         | '+' -> [< 'PLUS; stream >]
         | '-' -> [< 'MINUS; stream >]
+        | '*' -> [< 'TIMES; stream >]
+        | '/' -> [< 'DIVIDE; stream >]
+        | '(' -> [< 'LPARAN; stream >]
+        | ')' -> [< 'RPARAN; stream >]
         | _ -> [< stream >]
     )
     | [< >] -> [< >]
@@ -48,6 +48,10 @@ and lex_float buf = parser
 let debug = Stream.iter (function
     | PLUS -> printf "+"
     | MINUS -> printf "-"
+    | TIMES -> printf "*"
+    | DIVIDE -> printf "/"
+    | LPARAN -> printf "("
+    | RPARAN -> printf ")"
     | INT i -> printf "%d" i
     | FLOAT f -> printf "%f" f
     | IDENT i -> printf " %s " i

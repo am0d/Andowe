@@ -5,4 +5,8 @@ type token =
     | IDENT of string
     | PLUS
     | MINUS
+    | TIMES
+    | DIVIDE
+    | LPARAN
+    | RPARAN
     | NEWLINE
