@@ -1,5 +1,5 @@
 let parse_error s =
-    print_endline ("Error");
+    print_string ("Error: ");
     print_endline s
 
 let main () =
@@ -15,6 +15,8 @@ let main () =
                 ignore(Parser.parse_primary (Lexer.lex lexstream));
                 print_endline "Program is syntactically correct"
             with Message.Error s ->
+                parse_error s
+            | Stream.Error s ->
                 parse_error s
         done
     with End_of_file ->
