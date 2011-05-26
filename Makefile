@@ -6,7 +6,7 @@ include Makefile.ocaml
 
 DEBUG = -g
 CAMLFLAGS = -I +camlp4 -pp camlp4o
-LIBS = camlp4lib.cma
+LIBS = camlp4lib.cma llvm.cma
 
 CAMLC = ocamlc -I src $(DEBUG) $(CAMLFLAGS)
 CAMLOPT = ocamlopt -I src $(DEBUG) $(CAMLFLAGS)

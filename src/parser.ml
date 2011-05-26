@@ -1,4 +1,4 @@
-open Syntax
+open Ast
 
 (* Holds the precedence for each operator we use *)
 let binop_precedence:(char, int) Hashtbl.t = Hashtbl.create 10
