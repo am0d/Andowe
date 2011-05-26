@@ -5,6 +5,7 @@ let rec toplevel = parser
 
 (* primary
  *      ::= numberexpr
+ *      ::= parenexpr
  *)
 and parse_primary = parser
     (* numberexpr
@@ -13,6 +14,11 @@ and parse_primary = parser
      *)
     | [< 'Token.Int i >] -> Number (float_of_int i)
     | [< 'Token.Float f>] -> Number f
+    (* parenexpr
+     *      ::= '(' expression ')'
+     *)
+    | [< 'Token.Kwd '('; e=parse_primary; 'Token.Kwd ')' ?? "expected ')'" >] ->
+            e
     | [< >] -> raise (Message.Error "Number expected")
 
 and parse_expr = parser

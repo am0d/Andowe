@@ -12,16 +12,7 @@ let rec lex = parser
         lex_int buf stream
     end
     (* Recognise standard operators *)
-    | [< 'c; stream=lex >] -> begin
-        match c with
-        | '+' -> [< 'Kwd(c); stream >]
-        | '-' -> [< 'Kwd(c); stream >]
-        | '*' -> [< 'Kwd(c); stream >]
-        | '/' -> [< 'Kwd(c); stream >]
-        | '(' -> [< 'Kwd(c); stream >]
-        | ')' -> [< 'Kwd(c); stream >]
-        | _ -> [< stream >]
-    end
+    | [< 'c; stream >] -> [< 'Kwd c; lex stream >]
     | [< >] -> [< >]
 
 and lex_int buf = parser
