@@ -11,7 +11,7 @@ let main () =
                 let input = read_line () in
                 let lexstream = Stream.of_string input in
                 (*Lexer.debug (Lexer.lex lexstream);*)
-                ignore(Parser.toplevel (Lexer.lex lexstream));
+                ignore(Parser.parse_primary (Lexer.lex lexstream));
                 print_endline "Program is syntactically correct"
             with Message.Error s ->
                 parse_error s

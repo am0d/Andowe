@@ -2,27 +2,26 @@ open Printf
 open Token
 
 let rec lex = parser
-    | [< ' (' '|'\t'|'\n'); stream >] -> (
-        (* Ignore whitespace in the middle of the line *)
-        lex stream
-    )
-    | [< ' ('0'..'9') as c; stream >] -> (
-        (* Recognise numbers - both integer and float *)
+    (* Ignore whitespace in the middle of the line *)
+    | [< ' (' '|'\t'|'\n'); stream >] -> 
+            lex stream
+            (* Recognise numbers - both integer and float *)
+    | [< ' ('0'..'9') as c; stream >] -> begin
         let buf = Buffer.create 1 in
         Buffer.add_char buf c;
         lex_int buf stream
-    )
-    | [< 'c; stream=lex >] -> (
-        (* Recognise standard operators *)
+    end
+    (* Recognise standard operators *)
+    | [< 'c; stream=lex >] -> begin
         match c with
-        | '+' -> [< 'PLUS; stream >]
-        | '-' -> [< 'MINUS; stream >]
-        | '*' -> [< 'TIMES; stream >]
-        | '/' -> [< 'DIVIDE; stream >]
-        | '(' -> [< 'LPARAN; stream >]
-        | ')' -> [< 'RPARAN; stream >]
+        | '+' -> [< 'Kwd(c); stream >]
+        | '-' -> [< 'Kwd(c); stream >]
+        | '*' -> [< 'Kwd(c); stream >]
+        | '/' -> [< 'Kwd(c); stream >]
+        | '(' -> [< 'Kwd(c); stream >]
+        | ')' -> [< 'Kwd(c); stream >]
         | _ -> [< stream >]
-    )
+    end
     | [< >] -> [< >]
 
 and lex_int buf = parser
@@ -34,7 +33,7 @@ and lex_int buf = parser
             lex_float buf stream
     | [< stream=lex >] ->
             let num = int_of_string (Buffer.contents buf) in
-            [< 'INT(num); stream >]
+            [< 'Int(num); stream >]
 
 and lex_float buf = parser
     | [< ' ('0'..'9') as c; stream >] ->
@@ -42,19 +41,11 @@ and lex_float buf = parser
             lex_float buf stream
     | [< stream=lex >] ->
             let num = float_of_string (Buffer.contents buf) in
-            [< 'FLOAT(num); stream >]
+            [< 'Float(num); stream >]
 ;;
 
 let debug = Stream.iter (function
-    | PLUS -> printf "+"
-    | MINUS -> printf "-"
-    | TIMES -> printf "*"
-    | DIVIDE -> printf "/"
-    | LPARAN -> printf "("
-    | RPARAN -> printf ")"
-    | INT i -> printf "%d" i
-    | FLOAT f -> printf "%f" f
-    | IDENT i -> printf " %s " i
-    | STRING s -> printf "\"%s\"" s
-    | NEWLINE -> printf "\n"
-);;
+    | Kwd c -> printf "%c" c
+    | Int i -> printf "%d" i
+    | Float f -> printf "%f" f
+                        );;
