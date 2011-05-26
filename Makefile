@@ -6,10 +6,10 @@ include Makefile.ocaml
 
 DEBUG = -g
 CAMLFLAGS = -I +camlp4 -pp camlp4o
-LIBS = camlp4lib.cma llvm.cma
+LIBS = camlp4lib.cma llvm.cma llvm_analysis.cma
 
 CAMLC = ocamlc -I src $(DEBUG) $(CAMLFLAGS)
-CAMLOPT = ocamlopt -I src $(DEBUG) $(CAMLFLAGS)
+CAMLOPT = ocamlopt -I src -cc g++ $(DEBUG) $(CAMLFLAGS)
 CAMLDEP = ocamldep -I src $(CAMLFLAGS)
 #CAMLYACC = ocamlyacc
 # To add tracing to the compiler, run make with the option
