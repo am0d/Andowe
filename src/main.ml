@@ -3,6 +3,7 @@ let parse_error s =
     print_endline s
 
 let main () =
+    Parser.set_binop_precedence ();
     print_endline "Andowe 0.0.0";
     try
         while true do
