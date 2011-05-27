@@ -15,6 +15,8 @@ let rec codegen_expr = function
             begin
                 match op with
                 | '+' -> build_add lhs_val rhs_val "addtmp" builder
+                | '-' -> build_sub lhs_val rhs_val "subtmp" builder
+                | '*' -> build_mul lhs_val rhs_val "multmp" builder
                 | _ -> raise (Error "Unimplemented op")
             end
     | _ -> raise (Error "Unimplemented AST node")
