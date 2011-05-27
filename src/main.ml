@@ -1,3 +1,5 @@
+open Llvm
+
 let parse_error s =
     print_string ("Error: ");
     print_endline s
@@ -12,8 +14,9 @@ let rec main_loop stream =
     | Some token -> begin
         try match token with
             | _ ->
-                ignore (Parser.parse_primary stream);
+                let e = Parser.parse_expression stream in
                 print_endline "Parsed a toplevel expression";
+                dump_value (Codegen.codegen_expr e);
             with Message.Error s ->
                 Stream.junk stream;
                 parse_error s;

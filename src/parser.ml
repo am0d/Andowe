@@ -36,7 +36,7 @@ and parse_primary = parser
      *)
     | [< 'Token.Kwd '('; e=parse_expression; 'Token.Kwd ')' ?? "expected ')'" >] ->
             e
-    | [< >] -> raise (Message.Error "Number expected")
+    | [< >] -> raise (Message.Error "Unknown token when expecting an expression")
 
 (* expression
  *      ::= primary binoprhs
