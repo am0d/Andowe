@@ -12,6 +12,13 @@ let rec main_loop stream =
             main_loop stream
     | Some token -> begin
         try match token with
+            | Token.Def ->
+                let e = Parser.parse_definition stream in
+                print_endline "Parsed a function definition";
+            | Token.Extern ->
+                let e = Parser.parse_extern stream in
+                print_endline "Parsed an extern declaration";
+                dump_value (Codegen.codegen_prototype e);
             | _ ->
                 let e = Parser.parse_expression stream in
                 print_endline "Parsed a toplevel expression";

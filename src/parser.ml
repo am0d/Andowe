@@ -31,11 +31,13 @@ and parse_primary = parser
      *)
     | [< 'Token.Int i >] -> Number (float_of_int i)
     | [< 'Token.Float f>] -> Number f
+    
     (* parenexpr
      *      ::= '(' expression ')'
      *)
     | [< 'Token.Kwd '('; e=parse_expression; 'Token.Kwd ')' ?? "expected ')'" >] ->
             e
+
     | [< >] -> raise (Message.Error "Unknown token when expecting an expression")
 
 (* expression
@@ -44,6 +46,9 @@ and parse_primary = parser
 and parse_expression = parser
     | [< lhs=parse_primary; stream >] -> parse_bin_rhs 0 lhs stream
 
+(* binoprhs
+ *      ::= ('+' primary)
+ *)
 and parse_bin_rhs expr_prec lhs stream =
     match Stream.peek stream with
     (* If this is a binop, find its precedence *)
@@ -81,3 +86,41 @@ and parse_bin_rhs expr_prec lhs stream =
             parse_bin_rhs expr_prec lhs stream
         end
     | _ -> lhs
+
+(* prototype
+ *      ::= id '(' id* ')'
+ *)
+let parse_prototype = 
+    let rec parse_args accumulator = parser
+        | [< 'Token.Ident id; e=parse_args(id::accumulator) >] -> e
+        | [< >] -> accumulator
+    in
+
+    parser
+        | [< 'Token.Ident id;
+        'Token.Kwd '(' ?? "Expected '(' after function name";
+        args=parse_args [];
+        'Token.Kwd ')' ?? "Expected ')' at end of function prototype" >] ->
+            Prototype (id, Array.of_list (List.rev args))
+        | [< >] ->
+                raise (Message.Error "Expected function name in prototype")
+
+(* definition
+ *      ::= 'def' prototype expression
+ *)
+let parse_definition = parser
+    | [< 'Token.Def; p=parse_prototype; e=parse_expression >] ->
+            Function (p, e)
+
+(* extern
+ *      ::= 'extern' prototype
+ *)
+let parse_extern = parser
+    | [< 'Token.Extern; p=parse_prototype >] -> p
+
+(* toplevel
+ *      ::= expression
+ *)
+let parse_toplevel = parser
+    | [< e=parse_expression >] ->
+            Function (Prototype ("", [||]), e)
