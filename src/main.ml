@@ -7,9 +7,8 @@ let parse_error s =
 let rec main_loop stream =
     match Stream.peek stream with
     | None -> ()
-    | Some Token.Kwd '.' ->
+    | Some Token.Kwd ';' ->
             Stream.junk stream;
-            print_string "> "; flush stdout;
             main_loop stream
     | Some token -> begin
         try match token with
@@ -33,6 +32,6 @@ let main () =
     print_string "> "; flush stdout;
     let lexstream = Lexer.lex (Stream.of_channel stdin) in
     main_loop lexstream;
-    print_endline ""
+    dump_module Codegen.the_module
 
 let _ = Printexc.print main ()
