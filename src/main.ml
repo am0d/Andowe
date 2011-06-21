@@ -15,14 +15,15 @@ let rec main_loop stream =
             | Token.Def ->
                 let e = Parser.parse_definition stream in
                 print_endline "Parsed a function definition";
+                dump_value (Codegen.codegen_function e);
             | Token.Extern ->
                 let e = Parser.parse_extern stream in
                 print_endline "Parsed an extern declaration";
                 dump_value (Codegen.codegen_prototype e);
             | _ ->
-                let e = Parser.parse_expression stream in
+                let e = Parser.parse_toplevel stream in
                 print_endline "Parsed a toplevel expression";
-                dump_value (Codegen.codegen_expr e);
+                dump_value (Codegen.codegen_function e);
             with Message.Error s ->
                 Stream.junk stream;
                 parse_error s;

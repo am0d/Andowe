@@ -21,6 +21,9 @@ let rec codegen_expr = function
                 | '*' -> build_mul lhs_val rhs_val "multmp" builder
                 | _ -> raise (Error "Unimplemented op")
             end
+    | Ast.Variable name ->
+            (try Hashtbl.find named_values name with 
+                | Not_found -> raise (Error "Unknown variable referenced"))
     | _ -> raise (Error "Unimplemented AST node")
 
 let codegen_prototype = function
@@ -42,6 +45,29 @@ let codegen_prototype = function
             Array.iteri (fun i a ->
                 let n = args.(i) in
                 set_value_name n a;
-                Hashtbl.add named_values n a
+                Hashtbl.add named_values n a;
             ) (params f);
             f
+
+let codegen_function = function
+    | Ast.Function (proto, body) ->
+            Hashtbl.clear named_values;
+            let the_function = codegen_prototype proto in
+
+            (* Create a new basic block to start insertion *)
+            let bb = append_block context "entry" the_function in
+            position_at_end bb builder;
+
+            try
+                let ret_val = codegen_expr body in
+
+                (* Finish off the function *)
+                let _ = build_ret ret_val builder in
+
+                (* Validate the generated code, check for consistency *)
+                Llvm_analysis.assert_valid_function the_function;
+
+                the_function
+            with e ->
+                delete_function the_function;
+                raise e

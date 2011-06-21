@@ -38,6 +38,7 @@ and parse_primary = parser
     | [< 'Token.Kwd '('; e=parse_expression; 'Token.Kwd ')' ?? "expected ')'" >] ->
             e
 
+    | [< 'Token.Ident i >] -> Variable i
     | [< >] -> raise (Message.Error "Unknown token when expecting an expression")
 
 (* expression
