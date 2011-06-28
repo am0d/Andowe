@@ -8,7 +8,7 @@ DEBUG = -g
 CAMLFLAGS = -I +camlp4 -pp camlp4o
 LIBS = camlp4lib.cma llvm.cma llvm_analysis.cma
 
-CAMLC = ocamlc -I src $(DEBUG) $(CAMLFLAGS)
+CAMLC = ocamlc -I src -cc g++ $(DEBUG) $(CAMLFLAGS)
 CAMLOPT = ocamlopt -I src -cc g++ $(DEBUG) $(CAMLFLAGS)
 CAMLDEP = ocamldep -I src $(CAMLFLAGS)
 #CAMLYACC = ocamlyacc

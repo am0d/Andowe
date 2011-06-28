@@ -122,8 +122,7 @@ WITHDBM =dbm.cma -cclib -lmldbm -cclib -lndbm
 ################ Nothing to set up or fix here
 ##############################################################
 
-all:: .depend.input .depend $(EXEC).opt
-
+all:: .depend.input .depend $(EXEC)
 run: all
 	./$(EXEC)
 

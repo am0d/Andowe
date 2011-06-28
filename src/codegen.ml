@@ -16,9 +16,9 @@ let rec codegen_expr = function
             let rhs_val = codegen_expr rhs in
             begin
                 match op with
-                | '+' -> build_add lhs_val rhs_val "addtmp" builder
-                | '-' -> build_sub lhs_val rhs_val "subtmp" builder
-                | '*' -> build_mul lhs_val rhs_val "multmp" builder
+                | '+' -> build_fadd lhs_val rhs_val "addtmp" builder
+                | '-' -> build_fsub lhs_val rhs_val "subtmp" builder
+                | '*' -> build_fmul lhs_val rhs_val "multmp" builder
                 | _ -> raise (Error "Unimplemented op")
             end
     | Ast.Variable name ->
