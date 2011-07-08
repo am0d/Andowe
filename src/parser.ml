@@ -38,7 +38,23 @@ and parse_primary = parser
     | [< 'Token.Kwd '('; e=parse_expression; 'Token.Kwd ')' ?? "expected ')'" >] ->
             e
 
-    | [< 'Token.Ident i >] -> Variable i
+    | [< 'Token.Ident id; stream >] -> 
+            let rec parse_args accumulator = parser
+                | [< e=parse_expression; stream >] ->
+                        begin parser
+                            | [< 'Token.Kwd ','; e=parse_args (e :: accumulator) >] -> e
+                            | [< >] -> e :: accumulator
+                        end stream
+                | [< >] -> accumulator
+            in
+            let rec parse_ident id = parser
+                | [< 'Token.Kwd '('; 
+                      args=parse_args [];
+                      'Token.Kwd ')' ?? "expected ')'" >] ->
+                          Call (id, Array.of_list(List.rev args))
+                | [< >] -> Variable id
+            in
+            parse_ident id stream
     | [< >] -> raise (Message.Error "Unknown token when expecting an expression")
 
 (* expression

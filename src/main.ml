@@ -24,12 +24,9 @@ let rec main_loop stream =
                 let e = Parser.parse_toplevel stream in
                 print_endline "Parsed a toplevel expression";
                 dump_value (Codegen.codegen_function e);
-            with Message.Error s ->
-                Stream.junk stream;
-                parse_error s;
-            | Stream.Error s ->
-                Stream.junk stream;
-                parse_error s;
+        with Message.Error s | Stream.Error s | Codegen.Error s->
+            Stream.junk stream;
+            parse_error s;
     end;
     print_string "> "; flush stdout;
     main_loop stream
