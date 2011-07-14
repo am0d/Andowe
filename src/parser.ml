@@ -39,13 +39,17 @@ and parse_primary = parser
             e
 
     | [< 'Token.Ident id; stream >] -> 
-            let rec parse_args accumulator = parser
-                | [< e=parse_expression; stream >] ->
-                        begin parser
-                            | [< 'Token.Kwd ','; e=parse_args (e :: accumulator) >] -> e
-                            | [< >] -> e :: accumulator
-                        end stream
-                | [< >] -> accumulator
+            let rec parse_args accumulator stream = 
+                if Stream.peek stream = Some (Token.Kwd ')') then accumulator
+                else
+                begin parser
+                    | [< e=parse_expression; stream >] ->
+                            begin parser
+                                | [< 'Token.Kwd ','; e=parse_args (e :: accumulator) >] -> e
+                                | [< >] -> e :: accumulator
+                            end stream
+                    | [< >] -> accumulator
+                end stream
             in
             let rec parse_ident id = parser
                 | [< 'Token.Kwd '('; 
