@@ -27,13 +27,13 @@ let rec codegen_expr = function
                 | '<' ->
                         let i = build_fcmp Fcmp.Ult lhs_val rhs_val "cmptmp" builder in
                         build_uitofp i double_type "booltmp" builder
-                | _ -> raise (Error "Unimplemented op")
+                | _ -> raise (Error ("Unimplemented op " ^ (Char.escaped op)))
             end
     | Ast.Call (name, args) ->
             let callee = 
                 match lookup_function name the_module with
                 | Some callee -> callee
-                | None -> raise (Error "Unknown function referenced")
+                | None -> raise (Error ("Unknown function " ^ name ^ " referenced"))
             in
             let params = params callee in
             (* Check that the parameters match up *)
