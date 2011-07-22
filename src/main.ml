@@ -1,6 +1,7 @@
 open Llvm
 open Llvm_executionengine
 open Llvm_target
+open Llvm_scalar_opts
 
 let parse_error s =
     print_string ("Error: ");
@@ -17,7 +18,7 @@ let rec main_loop fpm execution_engine stream =
             | Token.Def ->
                 let expr = Parser.parse_definition stream in
 (*                 print_endline "Parsed a function definition"; *)
-                dump_value (Codegen.codegen_function expr);
+                dump_value (Codegen.codegen_function fpm expr);
             | Token.Extern ->
                 let expr = Parser.parse_extern stream in
 (*                 print_endline "Parsed an extern declaration"; *)
@@ -25,7 +26,7 @@ let rec main_loop fpm execution_engine stream =
             | _ ->
                 let expr = Parser.parse_toplevel stream in
 (*                 print_endline "Parsed a toplevel expression"; *)
-                let func = Codegen.codegen_function expr in
+                let func = Codegen.codegen_function fpm expr in
                 dump_value func;
                 let result = ExecutionEngine.run_function func [||] execution_engine in
                 print_float (GenericValue.as_float Codegen.double_type result);
@@ -49,6 +50,11 @@ let main () =
 
     (* Setup the optimizer *)
     TargetData.add (ExecutionEngine.target_data execution_engine) fpm;
+
+    add_instruction_combination fpm;
+    add_reassociation fpm;
+    add_gvn fpm;
+    add_cfg_simplification fpm;
 
     ignore (PassManager.initialize fpm);
 

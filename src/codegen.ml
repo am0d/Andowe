@@ -69,7 +69,7 @@ let codegen_prototype = function
             ) (params f);
             f
 
-let codegen_function = function
+let codegen_function fpm = function
     | Ast.Function (proto, body) ->
             Hashtbl.clear named_values;
 
@@ -95,6 +95,9 @@ let codegen_function = function
 
                 (* Validate the generated code, check for consistency *)
                 Llvm_analysis.assert_valid_function the_function;
+
+                (* Optimise the function *)
+                let _ = PassManager.run_function the_function fpm in
 
                 the_function
             with e ->
