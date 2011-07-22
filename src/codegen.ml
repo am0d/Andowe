@@ -12,7 +12,6 @@ let named_values:(string, llvalue) Hashtbl.t = Hashtbl.create 10
 let name_of = function
     | Ast.Prototype (name, _) ->
             name
-    | _ -> ""
 
 let rec codegen_expr = function
     | Ast.Number n -> const_float double_type n
@@ -45,6 +44,35 @@ let rec codegen_expr = function
     | Ast.Variable name ->
             (try Hashtbl.find named_values name with 
                 | Not_found -> raise (Error "Unknown variable referenced"))
+
+    | Ast.If (condition, true_block, false_block) ->
+            let cond = codegen_expr condition in
+
+            (* Compare condition to 0 to get a boolean value *)
+            let zero = const_float double_type 0.0 in
+            let cond_val = build_fcmp Fcmp.One cond zero "ifcond" builder in
+            let start_bb = insertion_block builder in
+            let my_function = block_parent start_bb in
+            let then_bb = append_block context "then" my_function in
+            position_at_end then_bb builder;
+            let then_val = codegen_expr true_block in
+            let new_then_bb = insertion_block builder in
+            let else_bb = append_block context "else" my_function in
+            position_at_end else_bb builder;
+            let else_val = codegen_expr false_block in
+            let new_else_bb = insertion_block builder in
+            let merge_bb = append_block context "ifcont" my_function in
+            position_at_end merge_bb builder;
+            let incoming = [(then_val, new_then_bb); (else_val, new_else_bb)] in
+            let phi = build_phi incoming "iftmp" builder in
+            position_at_end start_bb builder;
+            ignore (build_cond_br cond_val then_bb else_bb builder);
+            position_at_end new_then_bb builder; 
+            ignore (build_br merge_bb builder);
+            position_at_end new_else_bb builder;
+            ignore (build_br merge_bb builder);
+            position_at_end merge_bb builder;
+            phi
     | _ -> raise (Error "Unimplemented AST node")
 
 let codegen_prototype = function

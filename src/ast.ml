@@ -3,6 +3,7 @@ type expr =
     | Variable of string
     | Binary of char * expr * expr
     | Call of string * expr array
+    | If of expr * expr * expr
 
 type prototype = Prototype of string * string array
 

@@ -59,6 +59,10 @@ and parse_primary = parser
                 | [< >] -> Variable id
             in
             parse_ident id stream
+    | [< 'Token.If; condition=parse_expression;
+         'Token.Then ?? "expected 'then'"; true_block=parse_expression;
+         'Token.Else ?? "expected 'else'"; false_block=parse_expression; >] ->
+             If (condition, true_block, false_block)
     | [< >] -> raise (Message.Error "Unknown token when expecting an expression")
 
 (* expression

@@ -47,6 +47,9 @@ and lex_ident buf = parser
             match Buffer.contents buf with
             | "def" -> [< 'Def; stream >]
             | "extern" -> [< 'Extern; stream >]
+            | "if" -> [< 'If; stream >]
+            | "then" -> [< 'Then; stream >]
+            | "else" -> [< 'Else; stream >]
             | ident -> [< 'Ident(ident); stream >]
 ;;
 
@@ -57,4 +60,7 @@ let debug = Stream.iter (function
     | Ident s -> printf "%s" s
     | Def -> print_string "Def"
     | Extern -> print_string "Extern"
+    | If -> print_string "If"
+    | Then -> print_string "Then"
+    | Else -> print_string "Else"
                         );;
