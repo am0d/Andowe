@@ -142,7 +142,7 @@ OBJS = $(SMLYL:.ml=.cmo)
 OPTOBJS = $(OBJS:.cmo=.cmx)
 
 $(EXEC): $(OBJS) 
-	$(CAMLC) $(CUSTOM) -o $(EXEC) $(LIBS) $(OBJS)
+	$(CAMLC) -cclib -Wno-write-strings $(CUSTOM) -o $(EXEC) $(LIBS) $(OBJS)
 
 $(EXEC).opt: $(OPTOBJS)
 	$(CAMLOPT) -o $(EXEC) $(LIBS:.cma=.cmxa) $(OPTOBJS)
