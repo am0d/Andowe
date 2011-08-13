@@ -87,10 +87,8 @@ let rec codegen_expr = function
                     with
                         | Not_found -> n)
             in
-            let alloca = build_alloca double_type name builder in
             let e = codegen_expr expression in
-            ignore(build_store e alloca builder);
-            Hashtbl.add named_values name alloca;
+            Hashtbl.add named_values name e;
             e
 
     | Ast.Sequence (e1, e2) ->
