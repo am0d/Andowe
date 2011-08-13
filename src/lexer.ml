@@ -50,6 +50,8 @@ and lex_ident buf = parser
             | "if" -> [< 'If; stream >]
             | "then" -> [< 'Then; stream >]
             | "else" -> [< 'Else; stream >]
+            | "let" -> [< 'Let; stream >]
+            | "in" -> [< 'In; stream >]
             | ident -> [< 'Ident(ident); stream >]
 ;;
 
@@ -63,4 +65,6 @@ let debug = Stream.iter (function
     | If -> print_string "If"
     | Then -> print_string "Then"
     | Else -> print_string "Else"
+    | Let -> print_string "Let"
+    | In -> print_string "In"
                         );;

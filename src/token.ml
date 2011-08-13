@@ -5,3 +5,4 @@ type token =
     | Ident of string
     | Def | Extern
     | If |Then | Else
+    | Let | In

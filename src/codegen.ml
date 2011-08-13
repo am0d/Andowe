@@ -41,9 +41,14 @@ let rec codegen_expr = function
             let args = Array.map codegen_expr args in
             build_call callee args "calltmp" builder
 
-    | Ast.Variable name ->
+    | Ast.Variable name -> (
+            let v = 
             (try Hashtbl.find named_values name with 
-                | Not_found -> raise (Error "Unknown variable referenced"))
+                | Not_found -> raise (Error "Unknown variable referenced")) in
+            match classify_type (type_of v) with
+                | TypeKind.Pointer -> build_load v "ret" builder
+                | _ -> v
+            )
 
     | Ast.If (condition, true_block, false_block) ->
             let cond = codegen_expr condition in
@@ -73,7 +78,24 @@ let rec codegen_expr = function
             ignore (build_br merge_bb builder);
             position_at_end merge_bb builder;
             phi
-    | _ -> raise (Error "Unimplemented AST node")
+    | Ast.Assignment (variable, expression) ->
+            let name = match variable with
+                | n -> (
+                    try
+                        ignore (Hashtbl.find named_values n);
+                        raise (Error ("Can't redefine variable " ^ n))
+                    with
+                        | Not_found -> n)
+            in
+            let alloca = build_alloca double_type name builder in
+            let e = codegen_expr expression in
+            ignore(build_store e alloca builder);
+            Hashtbl.add named_values name alloca;
+            e
+
+    | Ast.Sequence (e1, e2) ->
+            ignore(codegen_expr e1);
+            codegen_expr e2
 
 let codegen_prototype = function
     | Ast.Prototype (name, args) ->
@@ -129,6 +151,7 @@ let codegen_function fpm = function
 
                 the_function
             with e ->
+                dump_value the_function;
                 if alreadyDefined then
                     delete_block bb
                 else

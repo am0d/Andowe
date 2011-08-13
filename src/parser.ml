@@ -38,6 +38,15 @@ and parse_primary = parser
     | [< 'Token.Kwd '('; e=parse_expression; 'Token.Kwd ')' ?? "expected ')'" >] ->
             e
 
+    (* identexpr
+     *      ::= Ident
+     *      ::= Ident '(' args ')
+     *
+     * args
+     *      ::=
+     *      ::= ',' expression
+     *      ::= expression args
+     *)
     | [< 'Token.Ident id; stream >] -> 
             let rec parse_args accumulator stream = 
                 if Stream.peek stream = Some (Token.Kwd ')') then accumulator
@@ -59,6 +68,14 @@ and parse_primary = parser
                 | [< >] -> Variable id
             in
             parse_ident id stream
+
+    (* ifexpr
+     *      ::= 'if' expression 'then' expression elseexpr
+     *
+     * elseexpr
+     *      ::=
+     *      ::= 'else' expression
+     *)
     | [< 'Token.If; condition=parse_expression;
          'Token.Then ?? "expected 'then'"; true_block=parse_expression;
          'Token.Else ?? "expected 'else'"; false_block=parse_expression; >] ->
@@ -69,6 +86,11 @@ and parse_primary = parser
  *      ::= primary binoprhs
  *)
 and parse_expression = parser
+    | [< 'Token.Let; 'Token.Ident id;
+            'Token.Kwd '='; value=parse_expression;
+            'Token.In; val2 = parse_expression;
+            >] ->
+            Sequence (Assignment (id, value), val2)
     | [< lhs=parse_primary; stream >] -> parse_bin_rhs 0 lhs stream
 
 (* binoprhs
