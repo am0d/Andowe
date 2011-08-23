@@ -52,19 +52,23 @@ and lex_ident buf = parser
             | "else" -> [< 'Else; stream >]
             | "let" -> [< 'Let; stream >]
             | "in" -> [< 'In; stream >]
+            | "begin" -> [< 'Begin; stream >]
+            | "end" -> [< 'End; stream >]
             | ident -> [< 'Ident(ident); stream >]
 ;;
 
 let debug = Stream.iter (function
-    | Kwd c -> printf "%c" c
-    | Int i -> printf "%d" i
-    | Float f -> printf "%f" f
-    | Ident s -> printf "%s" s
-    | Def -> print_string "Def"
-    | Extern -> print_string "Extern"
-    | If -> print_string "If"
-    | Then -> print_string "Then"
-    | Else -> print_string "Else"
-    | Let -> print_string "Let"
-    | In -> print_string "In"
+    | Kwd c -> printf "%c " c
+    | Int i -> printf "%d " i
+    | Float f -> printf "%f " f
+    | Ident s -> printf "%s " s
+    | Def -> print_string "Def "
+    | Extern -> print_string "Extern "
+    | If -> print_string "If "
+    | Then -> print_string "Then "
+    | Else -> print_string "Else "
+    | Let -> print_string "Let "
+    | In -> print_string "In "
+    | Begin -> print_string "Begin "
+    | End -> print_string "End "
                         );;

@@ -6,3 +6,4 @@ type token =
     | Def | Extern
     | If |Then | Else
     | Let | In
+    | Begin | End

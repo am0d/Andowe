@@ -77,13 +77,38 @@ and parse_primary = parser
      *      ::= 'else' expression
      *)
     | [< 'Token.If; condition=parse_expression;
-         'Token.Then ?? "expected 'then'"; true_block=parse_expression;
-         'Token.Else ?? "expected 'else'"; false_block=parse_expression; >] ->
+         'Token.Then ?? "expected 'then'"; true_block=parse_block;
+         'Token.Else ?? "expected 'else'"; false_block=parse_block; >] ->
              If (condition, true_block, false_block)
     | [< >] -> raise (Message.Error "Unknown token when expecting an expression")
 
+(* block
+ *      ::= 'begin' expression_list 'end'
+ *
+ * expression_list
+ *      ::= expression
+ *      ::= expression ';' expression_list
+ *)
+and parse_block = 
+    let rec parse_exp_list = parser
+        | [< e=parse_expression; stream >] ->
+                if Stream.peek stream = Some (Token.Kwd ';') then
+                    Stream.junk stream;
+                if Stream.peek stream = Some Token.End then
+                    e
+                else
+                    Sequence(e, parse_exp_list stream)
+    in
+    parser            
+    | [< 'Token.Begin;
+          e=parse_exp_list;
+          'Token.End ?? "expected 'end'"; >] ->
+            e
+    | [< >] -> raise (Message.Error "Blocks must begin with 'begin'")
+
 (* expression
  *      ::= primary binoprhs
+ *      ::= 'let' ident '=' expression 'in' expression
  *)
 and parse_expression = parser
     | [< 'Token.Let; 'Token.Ident id;
@@ -156,7 +181,7 @@ let parse_prototype =
  *      ::= 'def' prototype expression
  *)
 let parse_definition = parser
-    | [< 'Token.Def; p=parse_prototype; e=parse_expression >] ->
+    | [< 'Token.Def; p=parse_prototype; e=parse_block >] ->
             Function (p, e)
 
 (* extern
