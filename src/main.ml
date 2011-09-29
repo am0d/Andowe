@@ -10,7 +10,8 @@ let parse_error s =
 let rec main_loop fpm execution_engine stream =
     match Stream.peek stream with
     | None -> ()
-    | Some Token.Kwd ';' ->
+    | Some Token.Kwd ';'
+    | Some Token.Kwd '\n' ->
             Stream.junk stream;
             main_loop fpm execution_engine stream
     | Some token -> begin

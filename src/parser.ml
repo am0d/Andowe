@@ -77,7 +77,7 @@ and parse_primary = parser
      *      ::= 'else' expression
      *)
     | [< 'Token.If; condition=parse_expression;
-         'Token.Then ?? "expected 'then'"; true_block=parse_block;
+         true_block=parse_block;
          'Token.Else ?? "expected 'else'"; false_block=parse_block; >] ->
              If (condition, true_block, false_block)
     | [< >] -> raise (Message.Error "Unknown token when expecting an expression")
@@ -96,15 +96,21 @@ and parse_block =
                     Stream.junk stream;
                 if Stream.peek stream = Some Token.End then
                     e
+                else if Stream.peek stream = Some Token.Else then
+                    e
                 else
                     Sequence(e, parse_exp_list stream)
     in
     parser            
-    | [< 'Token.Begin;
+    | [< 'Token.Kwd ':';
           e=parse_exp_list;
-          'Token.End ?? "expected 'end'"; >] ->
-            e
-    | [< >] -> raise (Message.Error "Blocks must begin with 'begin'")
+          stream >] ->
+              if Stream.peek stream = Some Token.End then
+                  e
+              else if Stream.peek stream = Some Token.Else then
+                  e
+             else raise (Message.Error "expected 'end'")
+    | [< >] -> raise (Message.Error "Blocks must begin with ':'")
 
 (* expression
  *      ::= primary binoprhs

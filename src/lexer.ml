@@ -5,12 +5,13 @@ let rec lex = parser
     (* Ignore whitespace in the middle of the line *)
     | [< ' (' '|'\t'|'\r'|'\n'); stream >] -> 
             lex stream
-            (* Recognise numbers - both integer and float *)
+    (* Recognise numbers - both integer and float *)
     | [< ' ('0'..'9') as c; stream >] -> begin
         let buf = Buffer.create 1 in
         Buffer.add_char buf c;
         lex_int buf stream
     end
+    (* Recognise identifiers *)
     | [< ' ('A'..'Z'|'a'..'z') as c; stream >] -> begin
         let buf = Buffer.create 1 in
         Buffer.add_char buf c;
