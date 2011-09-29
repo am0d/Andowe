@@ -3,41 +3,57 @@ open Llvm_executionengine
 open Llvm_target
 open Llvm_scalar_opts
 
-let parse_error s =
+let parse_error ?(stream = None) s =
     print_string ("Error: ");
-    print_endline s
+    print_endline s;
+    match stream with
+    | Some s -> Lexer.debug(s)
+    | _ -> ()
 
-let rec main_loop fpm execution_engine stream =
+(* Global variables, program state *)
+(* Dump the LLVM value of each parse? *)
+let argDumpValue = ref false
+
+let rec main_loop interactive fpm execution_engine stream =
     match Stream.peek stream with
     | None -> ()
     | Some Token.Kwd ';'
     | Some Token.Kwd '\n' ->
             Stream.junk stream;
-            main_loop fpm execution_engine stream
+            main_loop interactive fpm execution_engine stream
     | Some token -> begin
         try match token with
             | Token.Def ->
                 let expr = Parser.parse_definition stream in
 (*                 print_endline "Parsed a function definition"; *)
-                dump_value (Codegen.codegen_function fpm expr);
+                let ret = Codegen.codegen_function fpm expr in
+                if !argDumpValue then dump_value ret
+                else ();
             | Token.Extern ->
                 let expr = Parser.parse_extern stream in
 (*                 print_endline "Parsed an extern declaration"; *)
-                dump_value (Codegen.codegen_prototype expr);
+                let ret = Codegen.codegen_prototype expr in
+                if !argDumpValue then dump_value ret
+                else ();
             | _ ->
                 let expr = Parser.parse_toplevel stream in
 (*                 print_endline "Parsed a toplevel expression"; *)
                 let func = Codegen.codegen_function fpm expr in
-                dump_value func;
+                if !argDumpValue then dump_value func;
                 let result = ExecutionEngine.run_function func [||] execution_engine in
                 print_float (GenericValue.as_float Codegen.double_type result);
                 print_newline ();
         with Message.Error s | Stream.Error s | Codegen.Error s->
+            parse_error ~stream:(Some stream) s;
             Stream.junk stream;
-            parse_error s;
     end;
+    if interactive then (print_string "> "; flush stdout);
+    main_loop interactive fpm execution_engine stream
+
+let shell fpm execution_engine =
     print_string "> "; flush stdout;
-    main_loop fpm execution_engine stream
+    let lexstream = Lexer.lex (Stream.of_channel stdin) in
+    main_loop true fpm execution_engine lexstream
 
 let main () =
     Parser.set_binop_precedence ();
@@ -59,9 +75,7 @@ let main () =
 
     ignore (PassManager.initialize fpm);
 
-    print_string "> "; flush stdout;
-    let lexstream = Lexer.lex (Stream.of_channel stdin) in
-    main_loop fpm execution_engine lexstream;
+    shell fpm execution_engine;
     dump_module Codegen.the_module
 
 let _ = Printexc.print main ()

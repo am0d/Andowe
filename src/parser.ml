@@ -106,9 +106,15 @@ and parse_block =
           e=parse_exp_list;
           stream >] ->
               if Stream.peek stream = Some Token.End then
+                  begin
+                  Stream.junk stream;
                   e
+                  end
               else if Stream.peek stream = Some Token.Else then
+                  begin
+                  Stream.junk stream;
                   e
+                  end
              else raise (Message.Error "expected 'end'")
     | [< >] -> raise (Message.Error "Blocks must begin with ':'")
 
