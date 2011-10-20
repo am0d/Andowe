@@ -13,6 +13,8 @@ let parse_error ?(stream = None) s =
 (* Global variables, program state *)
 (* Dump the LLVM value of each parse? *)
 let argDumpValue = ref false
+(* Files to parse *)
+let fileList = ref []
 
 let rec main_loop interactive fpm execution_engine stream =
     match Stream.peek stream with
@@ -55,7 +57,12 @@ let shell fpm execution_engine =
     let lexstream = Lexer.lex (Stream.of_channel stdin) in
     main_loop true fpm execution_engine lexstream
 
+let exec_file fpm execution_engine file =
+    let lexstream = Lexer.lex (Stream.of_channel (open_in file)) in
+    main_loop false fpm execution_engine lexstream
+
 let main () =
+    Arg.parse [] (fun f -> fileList := f :: !fileList) "Usage: andowe [file] ...";
     Parser.set_binop_precedence ();
     print_endline "Andowe 0.0.0";
 
@@ -75,7 +82,10 @@ let main () =
 
     ignore (PassManager.initialize fpm);
 
-    shell fpm execution_engine;
+    List.iter (exec_file fpm execution_engine) !fileList;
+
+    if (List.length !fileList) = 0 then
+        shell fpm execution_engine;
     dump_module Codegen.the_module
 
 let _ = Printexc.print main ()
