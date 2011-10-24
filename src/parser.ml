@@ -11,26 +11,26 @@ let set_binop_precedence () = begin
      * 1 is the lowest precedence.
      *)
     Hashtbl.add binop_precedence '<' 10;
+    Hashtbl.add binop_precedence '>' 10;
+    Hashtbl.add binop_precedence '=' 15;
     Hashtbl.add binop_precedence '+' 20;
     Hashtbl.add binop_precedence '-' 20;
     Hashtbl.add binop_precedence '*' 40;
     ()
 end
 
-let rec toplevel = parser
-    | [< >] -> []
-
 (* primary
  *      ::= numberexpr
  *      ::= parenexpr
  *)
-and parse_primary = parser
+let rec parse_primary = parser
     (* numberexpr
      *      ::= intexpr
      *      ::= floatexpr
      *)
-    | [< 'Token.Int i >] -> Number (float_of_int i)
-    | [< 'Token.Float f>] -> Number f
+    | [< 'Token.Int i >] -> Number i
+    | [< 'Token.Float f>] -> raise (Message.Error "Floats are currently unsupported")
+            (*Number f*)
     
     (* parenexpr
      *      ::= '(' expression ')'

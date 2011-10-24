@@ -5,7 +5,7 @@ exception Error of string
 let context = global_context ()
 let the_module = create_module context "Andowe JIT"
 let builder = builder context
-let double_type = double_type context
+let int_type = i32_type context
 
 let named_values:(string, llvalue) Hashtbl.t = Hashtbl.create 10
 
@@ -14,19 +14,23 @@ let name_of = function
             name
 
 let rec codegen_expr = function
-    | Ast.Number n -> const_float double_type n
+    | Ast.Number n -> const_int int_type n
     | Ast.Binary (op, lhs, rhs) ->
             let lhs_val = codegen_expr lhs in
             let rhs_val = codegen_expr rhs in
             begin
                 match op with
-                | '+' -> build_fadd lhs_val rhs_val "addtmp" builder
-                | '-' -> build_fsub lhs_val rhs_val "subtmp" builder
-                | '*' -> build_fmul lhs_val rhs_val "multmp" builder
-                | '<' ->
-                        let i = build_fcmp Fcmp.Ult lhs_val rhs_val "cmptmp" builder in
-                        build_uitofp i double_type "booltmp" builder
-                | _ -> raise (Error ("Unimplemented op " ^ (Char.escaped op)))
+                | '+' -> build_add lhs_val rhs_val "addtmp" builder
+                | '-' -> build_sub lhs_val rhs_val "subtmp" builder
+                | '*' -> build_mul lhs_val rhs_val "multmp" builder
+                | _ -> let f = match op with
+                        | '<' -> build_icmp Icmp.Slt
+                        | '>' -> build_icmp Icmp.Sgt
+                        | '=' -> build_icmp Icmp.Eq
+                        | _ -> raise (Error ("Unimplemented op " ^ (Char.escaped op)))
+                        in
+                        let e = f lhs_val rhs_val "cmptmp" builder in
+                        build_intcast e int_type "booltmp" builder
             end
     | Ast.Call (name, args) ->
             let callee = 
@@ -54,8 +58,8 @@ let rec codegen_expr = function
             let cond = codegen_expr condition in
 
             (* Compare condition to 0 to get a boolean value *)
-            let zero = const_float double_type 0.0 in
-            let cond_val = build_fcmp Fcmp.One cond zero "ifcond" builder in
+            let zero = const_int int_type 0 in
+            let cond_val = build_icmp Icmp.Ne cond zero "ifcond" builder in
             let start_bb = insertion_block builder in
             let my_function = block_parent start_bb in
             let then_bb = append_block context "then" my_function in
@@ -97,8 +101,8 @@ let rec codegen_expr = function
 
 let codegen_prototype = function
     | Ast.Prototype (name, args) ->
-            let doubles = Array.make (Array.length args) double_type in
-            let ft = function_type double_type doubles in
+            let numbers = Array.make (Array.length args) int_type in
+            let ft = function_type int_type numbers in
             let f =
                 match lookup_function name the_module with
                 | None -> declare_function name ft the_module

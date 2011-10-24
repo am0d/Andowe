@@ -25,9 +25,9 @@ and lex_int buf = parser
     | [< ' ('0'..'9') as c; stream >] ->
             Buffer.add_char buf c;
             lex_int buf stream
-    | [< ' ('.') as c; stream >] ->
+    (*| [< ' ('.') as c; stream >] ->
             Buffer.add_char buf c;
-            lex_float buf stream
+            lex_float buf stream*)
     | [< stream=lex >] ->
             let num = int_of_string (Buffer.contents buf) in
             [< 'Int(num); stream >]

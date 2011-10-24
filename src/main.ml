@@ -43,7 +43,7 @@ let rec main_loop interactive fpm execution_engine stream =
                 let func = Codegen.codegen_function fpm expr in
                 if !argDumpValue then dump_value func;
                 let result = ExecutionEngine.run_function func [||] execution_engine in
-                print_float (GenericValue.as_float Codegen.double_type result);
+                print_int (GenericValue.as_int result);
                 print_newline ();
         with Message.Error s | Stream.Error s | Codegen.Error s->
             parse_error ~stream:(Some stream) s;

@@ -1,5 +1,5 @@
 type expr =
-    | Number of float
+    | Number of int
     | Variable of string
     | Binary of char * expr * expr
     | Call of string * expr array
