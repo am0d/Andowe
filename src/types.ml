@@ -3,12 +3,15 @@ open Ast
 type ty = 
     | TInt
     | TBool
+    | TArrow of ty * ty
     | TError
 
-let string_of_type ty =
+let rec string_of_type ty =
     match ty with
     | TInt -> "int"
     | TBool -> "bool"
+    | TArrow (ty1, ty2) -> 
+            (string_of_type ty1) ^ " -> " ^ (string_of_type ty2)
     | TError -> "error"
 
 let type_error s =
@@ -27,7 +30,6 @@ and type_of ctx e =
     | Number _ -> TInt
     | Variable _ -> TInt
     | Binary (op, e1, e2) -> begin
-            print_endline (string_of_expr e);
             check ctx TInt e1;
             check ctx TInt e2;
             match op with

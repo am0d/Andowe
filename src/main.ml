@@ -29,27 +29,26 @@ let rec main_loop interactive fpm execution_engine stream =
         try match token with
             | Token.Def ->
                 let expr = Parser.parse_definition stream in
-(*                 print_endline "Parsed a function definition"; *)
                 let ty = Types.type_check [] expr in
                 let ret = Codegen.codegen_function fpm expr in
+                print_endline (Types.string_of_type ty);
                 if !argDumpValue then dump_value ret
                 else ();
             | Token.Extern ->
                 let expr = Parser.parse_extern stream in
-(*                 print_endline "Parsed an extern declaration"; *)
                 let ret = Codegen.codegen_prototype expr in
                 if !argDumpValue then dump_value ret
                 else ();
             | _ ->
                 let expr = Parser.parse_toplevel stream in
-(*                 print_endline "Parsed a toplevel expression"; *)
-                let ty = Types.type_check [] expr in
-                let func = Codegen.codegen_function fpm expr in
+                let ty = Types.type_of [] expr in
+                (* Create a lambda function for this expression *)
+                let l = Ast.Function (Ast.Prototype ("", [||]), expr) in
+                let func = Codegen.codegen_function fpm l in
                 if !argDumpValue then dump_value func;
                 let result = ExecutionEngine.run_function func [||] execution_engine in
-                print_int (GenericValue.as_int result);
-                print_newline ();
-                print_endline (Types.string_of_type ty);
+                print_endline ("- : " ^ (Types.string_of_type ty) ^ " = " ^
+                                (string_of_int(GenericValue.as_int result)));
         with Message.Error s | Stream.Error s | Codegen.Error s->
             parse_error ~stream:(Some stream) s;
             Stream.junk stream;

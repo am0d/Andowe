@@ -204,4 +204,4 @@ let parse_extern = parser
  *)
 let parse_toplevel = parser
     | [< e=parse_expression >] ->
-            Function (Prototype ("", [||]), e)
+            e
