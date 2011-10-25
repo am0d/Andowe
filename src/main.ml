@@ -13,6 +13,8 @@ let parse_error ?(stream = None) s =
 (* Global variables, program state *)
 (* Dump the LLVM value of each parse? *)
 let argDumpValue = ref false
+(* Dump the LLVM module at the end *)
+let argDumpModule = ref false
 (* Files to parse *)
 let fileList = ref []
 
@@ -28,6 +30,7 @@ let rec main_loop interactive fpm execution_engine stream =
             | Token.Def ->
                 let expr = Parser.parse_definition stream in
 (*                 print_endline "Parsed a function definition"; *)
+                let ty = Types.type_check [] expr in
                 let ret = Codegen.codegen_function fpm expr in
                 if !argDumpValue then dump_value ret
                 else ();
@@ -40,11 +43,13 @@ let rec main_loop interactive fpm execution_engine stream =
             | _ ->
                 let expr = Parser.parse_toplevel stream in
 (*                 print_endline "Parsed a toplevel expression"; *)
+                let ty = Types.type_check [] expr in
                 let func = Codegen.codegen_function fpm expr in
                 if !argDumpValue then dump_value func;
                 let result = ExecutionEngine.run_function func [||] execution_engine in
                 print_int (GenericValue.as_int result);
                 print_newline ();
+                print_endline (Types.string_of_type ty);
         with Message.Error s | Stream.Error s | Codegen.Error s->
             parse_error ~stream:(Some stream) s;
             Stream.junk stream;
@@ -62,7 +67,9 @@ let exec_file fpm execution_engine file =
     main_loop false fpm execution_engine lexstream
 
 let main () =
-    Arg.parse [] (fun f -> fileList := f :: !fileList) "Usage: andowe [file] ...";
+    Arg.parse [("-dump-value", Arg.Set argDumpValue, "Dump the value after each pass") ;
+               ("-dump-module", Arg.Set argDumpModule, "Dump the module at the end")
+                ] (fun f -> fileList := f :: !fileList) "Usage: andowe [file] ...";
     Parser.set_binop_precedence ();
     print_endline "Andowe 0.0.0";
 
@@ -86,6 +93,6 @@ let main () =
 
     if (List.length !fileList) = 0 then
         shell fpm execution_engine;
-    dump_module Codegen.the_module
+    if !argDumpModule then dump_module Codegen.the_module
 
 let _ = Printexc.print main ()
