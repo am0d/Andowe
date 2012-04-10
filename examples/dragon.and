@@ -1,8 +1,8 @@
-def dragon depth=5, dir="R":
+def dragon (depth=5, dir="R"):
     if depth > 0:
-        dragon depth-1, "R"
-        print dir
-        dragon depth-1, "L"
+        dragon (depth-1, "R")
+        print (dir)
+        dragon (depth-1, "L")
 
-def main:
-    dragon 6
+def main():
+    dragon (6)

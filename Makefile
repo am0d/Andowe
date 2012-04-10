@@ -4,7 +4,7 @@ EXEC = bin/andowe
 
 include Makefile.ocaml
 
-DEBUG = -g
+DEBUG = #-g
 CAMLFLAGS = -I +camlp4 -pp camlp4o
 LIBS = camlp4lib.cma llvm.cma llvm_analysis.cma llvm_executionengine.cma llvm_target.cma llvm_scalar_opts.cma
 

@@ -1,17 +1,17 @@
-def not(a):
-    if a = 0:
-        1
+def not(a:bool) as bool:
+    if a = true:
+        false
     else:
-        0
+        true
     end
 end
 
-def arith():
-    let a = 1 + 1 * 2 - 3 in
-    if not (a = 0):
-        1
+def arith() as int:
+    let a:int = 1 + 1 * 2 - 3 in
+    if a = false:
+        true
     else:
-        0
+        false
     end
 end
 

@@ -48,6 +48,7 @@ and lex_ident buf = parser
             match Buffer.contents buf with
             | "def" -> [< 'Def; stream >]
             | "extern" -> [< 'Extern; stream >]
+            | "as" -> [< 'As; stream >]
             | "if" -> [< 'If; stream >]
             | "then" -> [< 'Then; stream >]
             | "else" -> [< 'Else; stream >]
@@ -55,6 +56,10 @@ and lex_ident buf = parser
             | "in" -> [< 'In; stream >]
             | "begin" -> [< 'Begin; stream >]
             | "end" -> [< 'End; stream >]
+            | "true" -> [< 'Bool(true); stream >]
+            | "false" -> [< 'Bool(false); stream >]
+            | "bool" -> [< 'LBool; stream >]
+            | "int" -> [< 'LInt; stream >]
             | ident -> [< 'Ident(ident); stream >]
 ;;
 
@@ -63,8 +68,10 @@ let debug = Stream.iter (function
     | Int i -> printf "%d " i
     | Float f -> printf "%f " f
     | Ident s -> printf "%s " s
+    | Bool b -> if b then print_string "true " else print_string "false "
     | Def -> print_string "Def "
     | Extern -> print_string "Extern "
+    | As -> print_string " as "
     | If -> print_string "If "
     | Then -> print_string "Then "
     | Else -> print_string "Else "
@@ -72,4 +79,6 @@ let debug = Stream.iter (function
     | In -> print_string "In "
     | Begin -> print_string "Begin "
     | End -> print_string "End "
+    | LInt -> print_string "int "
+    | LBool -> print_string "bool "
                         );;

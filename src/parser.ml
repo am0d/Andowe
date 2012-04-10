@@ -27,10 +27,12 @@ let rec parse_primary = parser
     (* numberexpr
      *      ::= intexpr
      *      ::= floatexpr
+     *      ::= boolexpr
      *)
     | [< 'Token.Int i >] -> Number i
     | [< 'Token.Float f>] -> raise (Message.Error "Floats are currently unsupported")
             (*Number f*)
+    | [< 'Token.Bool b >] -> Boolean b
     
     (* parenexpr
      *      ::= '(' expression ')'
@@ -65,7 +67,7 @@ let rec parse_primary = parser
                       args=parse_args [];
                       'Token.Kwd ')' ?? "expected ')'" >] ->
                           Call (id, Array.of_list(List.rev args))
-                | [< >] -> Variable id
+                | [< >] -> Variable (id, TUnknown)
             in
             parse_ident id stream
 
@@ -169,11 +171,36 @@ and parse_bin_rhs expr_prec lhs stream =
     | _ -> lhs
 
 (* prototype
- *      ::= id '(' id* ')'
+ *      ::= id '(' arglist ')' as type
+ * arglist
+ *      ::= 
+ *      ::= id (':' type)? (',' arglist)
  *)
 let parse_prototype = 
-    let rec parse_args accumulator = parser
-        | [< 'Token.Ident id; e=parse_args(id::accumulator) >] -> e
+    let rec parse_type stream = 
+        match Stream.next stream with
+        | Token.LBool -> TBool
+        | Token.LInt -> TInt
+        | t -> TError(Token.string_of_token t)
+    
+    and parse_args accumulator = parser
+        | [< 'Token.Ident id; stream >] -> (
+            let _ = (
+                match Stream.peek stream with
+                | Some (Token.Kwd ':') -> (
+                    Stream.junk stream;
+                    parse_type stream
+                )
+                | _ -> TUnknown (* default argument type *)
+            )
+            in match Stream.peek stream with
+            | Some (Token.Kwd ',') -> (
+                Stream.junk stream;
+                parse_args (id::accumulator) stream
+            )
+            | _ ->
+                    id::accumulator
+        )
         | [< >] -> accumulator
     in
 
@@ -181,7 +208,8 @@ let parse_prototype =
         | [< 'Token.Ident id;
         'Token.Kwd '(' ?? "Expected '(' after function name";
         args=parse_args [];
-        'Token.Kwd ')' ?? "Expected ')' at end of function prototype" >] ->
+        'Token.Kwd ')' ?? "Expected ')' at end of function prototype";
+        'Token.As; t=parse_type >] ->
             Prototype (id, Array.of_list (List.rev args))
         | [< >] ->
                 raise (Message.Error "Expected function name in prototype")

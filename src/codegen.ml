@@ -15,6 +15,7 @@ let name_of = function
 
 let rec codegen_expr = function
     | Ast.Number n -> const_int int_type n
+    | Ast.Boolean b -> const_int int_type (if b then 1 else 0)
     | Ast.Binary (op, lhs, rhs) ->
             let lhs_val = codegen_expr lhs in
             let rhs_val = codegen_expr rhs in
@@ -45,7 +46,7 @@ let rec codegen_expr = function
             let args = Array.map codegen_expr args in
             build_call callee args "calltmp" builder
 
-    | Ast.Variable name -> (
+    | Ast.Variable (name, _) -> (
             let v = 
             (try Hashtbl.find named_values name with 
                 | Not_found -> raise (Error "Unknown variable referenced")) in
