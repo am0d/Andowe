@@ -15,7 +15,8 @@ type expr =
     | Assignment of string * expr
     | Sequence of expr * expr
 
-type prototype = Prototype of string * string array
+type parameter = Parameter of string * ty
+type prototype = Prototype of string * parameter array
 
 type func = Function of prototype * expr
 
@@ -33,4 +34,4 @@ let rec string_of_expr e =
     | Assignment (n, e) ->
             "let " ^ n ^ " = " ^ (string_of_expr e)
     | Sequence (e1, e2) ->
-            (string_of_expr e1) ^ "; " ^ (string_of_expr e2)
+            (string_of_expr e1) ^ ";\n" ^ (string_of_expr e2)

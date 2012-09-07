@@ -1,7 +1,7 @@
-(*open Llvm
+open Llvm
 open Llvm_executionengine
 open Llvm_target
-open Llvm_scalar_opts*)
+open Llvm_scalar_opts
 
 let parse_error ?(stream = None) s =
     print_string ("Error: ");
@@ -18,6 +18,9 @@ let argDumpModule = ref false
 (* Files to parse *)
 let fileList = ref []
 
+(* Global context *)
+let globalContext:(string, Ast.ty) Hashtbl.t = Hashtbl.create 10
+
 let rec main_loop interactive fpm execution_engine stream =
     match Stream.peek stream with
     | None -> ()
@@ -29,7 +32,7 @@ let rec main_loop interactive fpm execution_engine stream =
         try match token with
             | Token.Def ->
                 let expr = Parser.parse_definition stream in
-                let ty = Types.type_check [] expr in
+                let ty = Types.type_check globalContext expr in
                 let ret = Codegen.codegen_function fpm expr in
                 print_endline ("_ : ? -> " ^ Types.string_of_type ty);
                 if !argDumpValue then dump_value ret
@@ -41,22 +44,27 @@ let rec main_loop interactive fpm execution_engine stream =
                 else ();
             | _ ->
                 let expr = Parser.parse_toplevel stream in
-                let ty = Types.type_of [] expr in
                 (* Create a lambda function for this expression *)
                 let l = Ast.Function (Ast.Prototype ("", [||]), expr) in
+                let ty = Types.type_check globalContext l in
                 let func = Codegen.codegen_function fpm l in
                 if !argDumpValue then dump_value func;
                 let result = ExecutionEngine.run_function func [||] execution_engine in
                 print_endline ("- : " ^ (Types.string_of_type ty) ^ " = " ^
                                 (string_of_int(GenericValue.as_int result)));
         with 
-        | Message.Error s 
-        | Stream.Error s 
+        | Message.Error s ->
+                parse_error ~stream:(Some stream) ("" ^ s);
+                Stream.junk stream;
+        | Stream.Error s ->
+                parse_error ~stream:(Some stream) ("(stream) " ^ s);
+                Stream.junk stream;
         | Codegen.Error s->
-            parse_error ~stream:(Some stream) s;
+            parse_error ~stream:(Some stream) ("(codegen) " ^ s);
             Stream.junk stream;
         | Message.TypeError s ->
-                ()
+                parse_error ("(type) " ^ s);
+                Stream.junk stream;
     end;
     if interactive then (print_string "> "; flush stdout);
     main_loop interactive fpm execution_engine stream

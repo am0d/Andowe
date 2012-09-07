@@ -101,24 +101,25 @@ let rec codegen_expr = function
             codegen_expr e2
 
 let codegen_prototype = function
-    | Ast.Prototype (name, args) ->
-            let numbers = Array.make (Array.length args) int_type in
+    | Ast.Prototype (function_name, function_args) ->
+            let numbers = Array.make (Array.length function_args) int_type in
             let ft = function_type int_type numbers in
             let f =
-                match lookup_function name the_module with
-                | None -> declare_function name ft the_module
+                match lookup_function function_name the_module with
+                | None -> declare_function function_name ft the_module
                 | Some f ->
                         if Array.length (basic_blocks f) == 0 then () 
                         else raise (Error "Can't redefine function with a body");
                         
-                        if Array.length (params f) == Array.length args then ()
+                        if Array.length (params f) == Array.length function_args then ()
                         else raise (Error "Redefinition of function with different # of args");
                         f
             in
             Array.iteri (fun i a ->
-                let n = args.(i) in
-                set_value_name n a;
-                Hashtbl.add named_values n a;
+                match function_args.(i) with
+                | Ast.Parameter (parameter_name, parameter_type) ->
+                        set_value_name parameter_name a;
+                        Hashtbl.add named_values parameter_name a;
             ) (params f);
             f
 

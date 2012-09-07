@@ -24,7 +24,10 @@ and type_of ctx e =
     match e with
     | Boolean _ -> TBool
     | Number _ -> TInt
-    | Variable _ -> TInt
+    | Variable(v, _) -> begin
+        try Hashtbl.find ctx v
+        with Not_found -> type_error (v ^ " is not defined")
+    end
     | Binary (op, e1, e2) -> begin
             match op with
             | '>'
@@ -54,13 +57,29 @@ and type_of ctx e =
             TInt
     | _ -> TError(string_of_expr e)
 
+and build_ctx function_prototype =
+    (* Build up a local context based on the names / types of the parameters for the function *)
+    let local_context:(string, Ast.ty) Hashtbl.t = Hashtbl.create 2 in
+
+    match function_prototype with 
+    | Prototype (function_name, function_parameters) -> begin
+            let add_to_context parameter =
+                match parameter with
+                | Parameter (parameter_name, parameter_type) ->
+                        Hashtbl.add local_context parameter_name parameter_type
+            in
+
+            Array.iter add_to_context function_parameters;
+            local_context
+        end
+
 and type_check ctx e =
     match e with
     | Function (p, e) ->
             try
-                type_of ctx e
+                let local_context = build_ctx p in
+                type_of local_context e
             with Message.TypeError te ->
                 match p with
                 | Prototype (name, args) ->
-                        raise (Message.TypeError ("In function " ^ name ^
-                        ":\n\t" ^ te))
+                        raise (Message.TypeError ("In function " ^ name ^ ":\n\t" ^ te))

@@ -8,7 +8,7 @@ end
 
 def arith() as int:
     let a:int = 1 + 1 * 2 - 3 in
-    if a = false:
+    if a = 0:
         true
     else:
         false

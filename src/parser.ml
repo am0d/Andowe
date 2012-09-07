@@ -185,7 +185,7 @@ let parse_prototype =
     
     and parse_args accumulator = parser
         | [< 'Token.Ident id; stream >] -> (
-            let _ = (
+            let arg_type = (
                 match Stream.peek stream with
                 | Some (Token.Kwd ':') -> (
                     Stream.junk stream;
@@ -196,10 +196,10 @@ let parse_prototype =
             in match Stream.peek stream with
             | Some (Token.Kwd ',') -> (
                 Stream.junk stream;
-                parse_args (id::accumulator) stream
+                parse_args (Parameter(id, arg_type)::accumulator) stream
             )
             | _ ->
-                    id::accumulator
+                    Parameter(id, arg_type)::accumulator
         )
         | [< >] -> accumulator
     in
